@@ -6,6 +6,15 @@
 
 ---
 
+## Start Here (new session orientation)
+
+- **Nothing is implemented yet** — `src/`, `public/`, and `package.json` don't exist.
+- Check [`docs/TASKS.md`](docs/TASKS.md) for what to work on next (start with Phase 1).
+- All work goes on the **`develop`** branch; `main` is production-only.
+- Read the rest of this file before writing any code.
+
+---
+
 ## Project
 
 Self-hosted leaderboard for the **M335 Schnitzeljagd** mobile-dev course.  
@@ -120,6 +129,32 @@ git pull && docker compose up --build -d
 | `POST` | `/admin/cohorts` | Session cookie | Create cohort |
 | `POST` | `/admin/cohorts/:id/groups` | Session cookie | Create group (returns token once) |
 | `POST` | `/admin/groups/:id/reset-token` | Session cookie | Regenerate group token |
+
+---
+
+## Git Workflow
+
+| Branch | Purpose |
+|--------|---------|
+| `main` | Production — only what runs on the NAS. Never commit directly. |
+| `develop` | Integration branch — all day-to-day work happens here. |
+
+```bash
+# Standard flow
+git checkout develop        # always work here
+git add … && git commit …
+git push origin develop
+
+# Deploy to production
+git checkout main
+git merge develop
+git push origin main
+git checkout develop
+```
+
+- Commit messages in English, imperative mood ("Add login route", not "Added…").
+- Keep `develop` passing (buildable + no TS errors) before merging to `main`.
+- There is no separate PR process for this solo project — direct merges are fine.
 
 ---
 

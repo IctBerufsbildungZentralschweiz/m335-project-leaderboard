@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment — secrets live only on the NAS, never committed
+.env
+
+# SQLite data (local dev)
+data/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
