@@ -37,4 +37,4 @@ Derived from the phased implementation plan in [SPEC.md](SPEC.md).
 - [ ] CSV export of runs per cohort (admin)
 - [ ] `HH:mm:ss` duration helper used consistently across all views
 - [ ] Backup documentation (Synology Hyper Backup setup)
-- [ ] Student handout template (cohort slug + token instructions)
+- [x] Student handout template (cohort slug + token instructions) — printable `/admin/handout` page, opened from token modal
