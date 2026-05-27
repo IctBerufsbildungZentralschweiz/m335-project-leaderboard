@@ -8,8 +8,8 @@
 
 ## Start Here (new session orientation)
 
-- **Nothing is implemented yet** — `src/`, `public/`, and `package.json` don't exist.
-- Check [`docs/TASKS.md`](docs/TASKS.md) for what to work on next (start with Phase 1).
+- **Phase 1 is complete** — `src/`, `public/`, `package.json`, `Dockerfile`, `docker-compose.yml` all exist. Next: NAS deploy, then Phase 2 (admin UX).
+- Check [`docs/TASKS.md`](docs/TASKS.md) for remaining work.
 - All work goes on the **`develop`** branch; `main` is production-only.
 - Read the rest of this file before writing any code.
 
@@ -74,8 +74,7 @@ leaderboard/
 └── CLAUDE.md              # ← this file
 ```
 
-> **Note:** `src/` and `public/` don't exist yet — this reflects the target
-> structure. Update this section as files are added.
+> **Note:** `src/cli/seed.ts` and `src/ranking.ts` / `src/time.ts` are additional Phase 1 files not listed above. `public/admin/` does not exist yet (Phase 2).
 
 ---
 

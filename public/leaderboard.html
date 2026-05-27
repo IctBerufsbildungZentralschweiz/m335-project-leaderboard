@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🥩 Schnitzeljagd Leaderboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="header">
+    <h1>🥩 Schnitzeljagd Leaderboard</h1>
+    <h2 id="cohort-name">Lade…</h2>
+  </div>
+  <div class="container">
+    <div id="content"></div>
+    <div class="refresh-bar">
+      <span id="last-updated"></span>
+      <button id="refresh-btn">↻ Aktualisieren</button>
+    </div>
+  </div>
+
+  <script>
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDuration(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+    }
+
+    function formatTime(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    const slug = location.pathname.split('/').filter(Boolean)[1];
+    if (!slug) {
+      document.body.innerHTML = '<p class="error" style="padding:2rem">Kein Cohort-Slug in der URL.</p>';
+      throw new Error('no slug');
+    }
+
+    async function load() {
+      const content = document.getElementById('content');
+      const lastUpdated = document.getElementById('last-updated');
+      const cohortName = document.getElementById('cohort-name');
+
+      try {
+        const res = await fetch(`/api/${encodeURIComponent(slug)}/leaderboard`);
+        if (res.status === 404) {
+          content.innerHTML = '<p class="error">Kohorte nicht gefunden.</p>';
+          return;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        cohortName.textContent = data.cohort.name;
+        document.title = `🥩 ${data.cohort.name} — Leaderboard`;
+
+        lastUpdated.textContent = data.updatedAt
+          ? `Zuletzt aktualisiert: ${formatTime(data.updatedAt)}`
+          : 'Noch keine Einträge';
+
+        if (data.entries.length === 0) {
+          content.innerHTML = '<p class="empty">Noch keine Einträge.</p>';
+          return;
+        }
+
+        const rows = data.entries.map(e => {
+          const rankDisplay = e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank;
+          return `
+            <tr>
+              <td class="rank">${rankDisplay}</td>
+              <td>
+                ${esc(e.playerName)}
+                <div class="group-name">${esc(e.groupName)}</div>
+              </td>
+              <td class="schnitzel">${e.schnitzel}</td>
+              <td class="kartoffeln">${e.kartoffeln}</td>
+              <td class="duration">${formatDuration(e.durationSeconds)}</td>
+            </tr>`;
+        }).join('');
+
+        content.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Rang</th>
+                <th>Spieler</th>
+                <th>🥩</th>
+                <th>🥔</th>
+                <th>Zeit</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>`;
+      } catch (e) {
+        content.innerHTML = `<p class="error">Fehler beim Laden: ${esc(e.message)}</p>`;
+      }
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', load);
+    load();
+    setInterval(load, 30_000);
+  </script>
+</body>
+</html>

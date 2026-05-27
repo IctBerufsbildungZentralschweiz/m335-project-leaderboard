@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🥩 Schnitzeljagd Leaderboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="header">
+    <h1>🥩 Schnitzeljagd Leaderboard</h1>
+    <h2>M335 — Alle Kohorten</h2>
+  </div>
+  <div class="container">
+    <div id="content"><p class="empty">Lade…</p></div>
+  </div>
+
+  <script>
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function load() {
+      const el = document.getElementById('content');
+      try {
+        const res = await fetch('/api/cohorts');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const cohorts = await res.json();
+        if (cohorts.length === 0) {
+          el.innerHTML = '<p class="empty">Noch keine Kohorten vorhanden.</p>';
+          return;
+        }
+        el.innerHTML = `
+          <ul class="cohort-list">
+            ${cohorts.map(c =>
+              `<li><a href="/leaderboard/${esc(c.slug)}">${esc(c.name)}</a></li>`
+            ).join('')}
+          </ul>`;
+      } catch (e) {
+        el.innerHTML = `<p class="error">Fehler beim Laden: ${esc(e.message)}</p>`;
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
