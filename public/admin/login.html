@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🥩 Leaderboard Admin</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <h1>🥩 Leaderboard Admin</h1>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="password">Passwort</label>
+          <input id="password" type="password" autocomplete="current-password" autofocus required />
+        </div>
+        <div id="error-msg" class="error" style="display:none"></div>
+        <button type="submit" id="submit-btn">Anmelden</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      const password = document.getElementById('password').value;
+
+      btn.disabled = true;
+      btn.textContent = '…';
+      errEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/admin/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+        if (res.status === 204) {
+          location.replace('/admin/');
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        errEl.textContent = data.error ?? 'Anmeldung fehlgeschlagen.';
+        errEl.style.display = '';
+      } catch {
+        errEl.textContent = 'Netzwerkfehler.';
+        errEl.style.display = '';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Anmelden';
+      }
+    });
+  </script>
+</body>
+</html>

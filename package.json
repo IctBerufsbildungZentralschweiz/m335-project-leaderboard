@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "description": "M335 Schnitzeljagd Leaderboard",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "DATABASE_PATH=./data/leaderboard.db tsx watch --env-file .env src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx src/cli/seed.ts",
-    "test-seed": "tsx src/cli/test-seed.ts"
+    "seed": "DATABASE_PATH=./data/leaderboard.db tsx --env-file .env src/cli/seed.ts",
+    "test-seed": "DATABASE_PATH=./data/leaderboard.db tsx --env-file .env src/cli/test-seed.ts"
   },
   "dependencies": {
-    "@fastify/static": "^8.0.0",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/static": "^9.1.3",
     "better-sqlite3": "^11.0.0",
     "fastify": "^5.0.0"
   },

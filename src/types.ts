@@ -34,8 +34,26 @@ export interface LeaderboardRow {
   submitted_at: string;
 }
 
+export interface AdminSessionRow {
+  id: string;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface RunWithGroupRow {
+  id: number;
+  group_id: number;
+  group_name: string;
+  player_name: string;
+  schnitzel: number;
+  kartoffeln: number;
+  duration_seconds: number;
+  submitted_at: string;
+}
+
 declare module 'fastify' {
   interface FastifyRequest {
     group: { id: number; name: string; cohortId: number } | null;
+    adminSession: { id: string } | null;
   }
 }

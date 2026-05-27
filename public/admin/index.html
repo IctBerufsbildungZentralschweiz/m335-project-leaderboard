@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🥩 Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>🥩 Admin</h1>
+        <button id="logout-btn" class="btn-ghost">Abmelden</button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Kohorten</div>
+        <ul id="cohort-list" class="sidebar-list"></ul>
+      </div>
+      <div class="sidebar-section">
+        <form id="new-cohort-form" class="inline-form">
+          <div class="form-group">
+            <label>Name</label>
+            <input id="cohort-name-input" type="text" placeholder="M335 HS2025" required />
+          </div>
+          <div class="form-group">
+            <label>Slug</label>
+            <input id="cohort-slug-input" type="text" placeholder="m335-hs2025" pattern="[a-z0-9-]+" required />
+          </div>
+          <div id="new-cohort-error" class="error" style="display:none"></div>
+          <button type="submit">+ Kohorte erstellen</button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="admin-main">
+      <div id="empty-state" class="empty" style="padding:2rem">
+        Wähle eine Kohorte aus der Liste links.
+      </div>
+
+      <div id="cohort-detail" style="display:none">
+        <div class="cohort-header">
+          <div>
+            <h2 id="detail-name"></h2>
+            <span id="detail-slug" class="slug-badge"></span>
+          </div>
+          <div class="cohort-actions">
+            <button id="copy-url-btn" class="btn-ghost">📋 Leaderboard-URL</button>
+            <button id="delete-cohort-btn" class="btn-danger">Kohorte löschen</button>
+          </div>
+        </div>
+        <div id="cohort-error" class="error" style="display:none;margin-bottom:1rem"></div>
+
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab="groups">Gruppen</button>
+          <button class="tab-btn" data-tab="runs">Runs</button>
+        </div>
+
+        <!-- Groups tab -->
+        <div id="tab-groups" class="tab-content">
+          <table id="groups-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Erstellt</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="groups-tbody"></tbody>
+          </table>
+          <p id="groups-empty" class="empty" style="display:none">Noch keine Gruppen.</p>
+
+          <form id="new-group-form" class="inline-form" style="margin-top:1.5rem">
+            <div class="form-group" style="flex:1">
+              <label>Gruppenname</label>
+              <input id="group-name-input" type="text" placeholder="Gruppe 1" required />
+            </div>
+            <div id="new-group-error" class="error" style="display:none"></div>
+            <button type="submit">+ Gruppe hinzufügen</button>
+          </form>
+        </div>
+
+        <!-- Runs tab -->
+        <div id="tab-runs" class="tab-content" style="display:none">
+          <table id="runs-table">
+            <thead>
+              <tr>
+                <th>Spieler</th>
+                <th>Gruppe</th>
+                <th>🥩</th>
+                <th>🥔</th>
+                <th>Zeit</th>
+                <th>Eingereicht</th>
+              </tr>
+            </thead>
+            <tbody id="runs-tbody"></tbody>
+          </table>
+          <p id="runs-empty" class="empty" style="display:none">Noch keine Runs.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Token modal -->
+  <div id="token-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3 id="modal-title">Token</h3>
+      <div class="token-display">
+        <code id="modal-token"></code>
+        <button id="copy-token-btn">📋 Kopieren</button>
+      </div>
+      <p class="modal-warning">⚠️ Dieser Token wird nicht mehr angezeigt.<br>Jetzt kopieren und der Gruppe mitteilen.</p>
+      <button id="modal-close-btn">Schliessen</button>
+    </div>
+  </div>
+
+  <script>
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDuration(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    // --- Auth guard ---
+    async function apiGet(url) {
+      const res = await fetch(url);
+      if (res.status === 401) { location.replace('/admin/login'); throw new Error('unauth'); }
+      return res;
+    }
+
+    async function apiPost(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 401) { location.replace('/admin/login'); throw new Error('unauth'); }
+      return res;
+    }
+
+    async function apiDelete(url) {
+      const res = await fetch(url, { method: 'DELETE' });
+      if (res.status === 401) { location.replace('/admin/login'); throw new Error('unauth'); }
+      return res;
+    }
+
+    // --- State ---
+    let cohorts = [];
+    let selectedCohortId = null;
+
+    // --- Token modal ---
+    function showTokenModal(title, token) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-token').textContent = token;
+      document.getElementById('token-modal').style.display = 'flex';
+    }
+
+    document.getElementById('copy-token-btn').addEventListener('click', () => {
+      const token = document.getElementById('modal-token').textContent;
+      navigator.clipboard.writeText(token).catch(() => {});
+    });
+
+    document.getElementById('modal-close-btn').addEventListener('click', () => {
+      document.getElementById('token-modal').style.display = 'none';
+    });
+
+    // --- Cohort sidebar ---
+    function renderSidebar() {
+      const ul = document.getElementById('cohort-list');
+      if (cohorts.length === 0) {
+        ul.innerHTML = '<li class="empty-item">Noch keine Kohorten.</li>';
+        return;
+      }
+      ul.innerHTML = cohorts.map(c => `
+        <li class="sidebar-item ${c.id === selectedCohortId ? 'active' : ''}" data-id="${c.id}">
+          <span class="item-name">${esc(c.name)}</span>
+          <span class="item-slug">${esc(c.slug)}</span>
+        </li>
+      `).join('');
+      ul.querySelectorAll('.sidebar-item').forEach(li => {
+        li.addEventListener('click', () => selectCohort(parseInt(li.dataset.id)));
+      });
+    }
+
+    async function loadCohorts() {
+      const res = await apiGet('/admin/cohorts');
+      cohorts = await res.json();
+      renderSidebar();
+      if (selectedCohortId) {
+        const still = cohorts.find(c => c.id === selectedCohortId);
+        if (still) loadCohortDetail(selectedCohortId);
+        else { selectedCohortId = null; showEmptyState(); }
+      }
+    }
+
+    function showEmptyState() {
+      document.getElementById('empty-state').style.display = '';
+      document.getElementById('cohort-detail').style.display = 'none';
+    }
+
+    // --- Cohort detail ---
+    function selectCohort(id) {
+      selectedCohortId = id;
+      renderSidebar();
+      loadCohortDetail(id);
+    }
+
+    async function loadCohortDetail(cohortId) {
+      const cohort = cohorts.find(c => c.id === cohortId);
+      if (!cohort) return;
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('cohort-detail').style.display = '';
+      document.getElementById('cohort-error').style.display = 'none';
+      document.getElementById('detail-name').textContent = cohort.name;
+      document.getElementById('detail-slug').textContent = cohort.slug;
+      loadGroupsForCohort(cohortId);
+      loadRunsIfActiveTab(cohortId);
+    }
+
+    // --- Tabs ---
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.getElementById(`tab-${btn.dataset.tab}`).style.display = '';
+        if (btn.dataset.tab === 'runs' && selectedCohortId) {
+          loadRunsForCohort(selectedCohortId);
+        }
+      });
+    });
+
+    function loadRunsIfActiveTab(cohortId) {
+      const activeTab = document.querySelector('.tab-btn.active');
+      if (activeTab?.dataset.tab === 'runs') loadRunsForCohort(cohortId);
+    }
+
+    // --- Groups ---
+    async function loadGroupsForCohort(cohortId) {
+      const res = await apiGet(`/admin/cohorts/${cohortId}/groups`);
+      const groups = await res.json();
+      const tbody = document.getElementById('groups-tbody');
+      const empty = document.getElementById('groups-empty');
+      const table = document.getElementById('groups-table');
+      if (groups.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = '';
+      } else {
+        table.style.display = '';
+        empty.style.display = 'none';
+        tbody.innerHTML = groups.map(g => `
+          <tr>
+            <td>${esc(g.name)}</td>
+            <td>${formatDate(g.createdAt)}</td>
+            <td class="row-actions">
+              <button class="btn-ghost btn-sm" data-action="reset" data-gid="${g.id}" data-gname="${esc(g.name)}">Token reset</button>
+              <button class="btn-danger btn-sm" data-action="delete-group" data-gid="${g.id}" data-gname="${esc(g.name)}">Löschen</button>
+            </td>
+          </tr>
+        `).join('');
+        tbody.querySelectorAll('[data-action="reset"]').forEach(btn => {
+          btn.addEventListener('click', () => resetGroupToken(parseInt(btn.dataset.gid), btn.dataset.gname));
+        });
+        tbody.querySelectorAll('[data-action="delete-group"]').forEach(btn => {
+          btn.addEventListener('click', () => deleteGroup(parseInt(btn.dataset.gid), btn.dataset.gname));
+        });
+      }
+    }
+
+    async function resetGroupToken(groupId, groupName) {
+      const res = await apiPost(`/admin/groups/${groupId}/reset-token`, {});
+      if (!res.ok) { alert('Fehler beim Token-Reset.'); return; }
+      const data = await res.json();
+      showTokenModal(`Neuer Token für "${groupName}"`, data.apiToken);
+    }
+
+    async function deleteGroup(groupId, groupName) {
+      if (!confirm(`Gruppe "${groupName}" wirklich löschen?`)) return;
+      const res = await apiDelete(`/admin/groups/${groupId}`);
+      if (res.status === 204) {
+        loadGroupsForCohort(selectedCohortId);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const errEl = document.getElementById('cohort-error');
+        errEl.textContent = data.error ?? 'Fehler beim Löschen.';
+        errEl.style.display = '';
+      }
+    }
+
+    // --- New group form ---
+    document.getElementById('new-group-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!selectedCohortId) return;
+      const nameInput = document.getElementById('group-name-input');
+      const errEl = document.getElementById('new-group-error');
+      errEl.style.display = 'none';
+      const res = await apiPost(`/admin/cohorts/${selectedCohortId}/groups`, { name: nameInput.value });
+      if (res.status === 201) {
+        const data = await res.json();
+        nameInput.value = '';
+        showTokenModal(`Token für "${data.name}"`, data.apiToken);
+        loadGroupsForCohort(selectedCohortId);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        errEl.textContent = data.error ?? 'Fehler beim Erstellen.';
+        errEl.style.display = '';
+      }
+    });
+
+    // --- Runs ---
+    async function loadRunsForCohort(cohortId) {
+      const res = await apiGet(`/admin/cohorts/${cohortId}/runs`);
+      const runs = await res.json();
+      const tbody = document.getElementById('runs-tbody');
+      const empty = document.getElementById('runs-empty');
+      const table = document.getElementById('runs-table');
+      if (runs.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = '';
+      } else {
+        table.style.display = '';
+        empty.style.display = 'none';
+        tbody.innerHTML = runs.map(r => `
+          <tr>
+            <td>${esc(r.playerName)}</td>
+            <td>${esc(r.groupName)}</td>
+            <td class="schnitzel">${r.schnitzel}</td>
+            <td class="kartoffeln">${r.kartoffeln}</td>
+            <td class="duration">${formatDuration(r.durationSeconds)}</td>
+            <td>${formatDate(r.submittedAt)}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // --- Delete cohort ---
+    document.getElementById('delete-cohort-btn').addEventListener('click', async () => {
+      if (!selectedCohortId) return;
+      const cohort = cohorts.find(c => c.id === selectedCohortId);
+      if (!confirm(`Kohorte "${cohort?.name}" wirklich löschen? Nur möglich wenn keine Gruppen oder Runs vorhanden.`)) return;
+      const res = await apiDelete(`/admin/cohorts/${selectedCohortId}`);
+      if (res.status === 204) {
+        selectedCohortId = null;
+        showEmptyState();
+        loadCohorts();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const errEl = document.getElementById('cohort-error');
+        errEl.textContent = data.error ?? 'Fehler beim Löschen.';
+        errEl.style.display = '';
+      }
+    });
+
+    // --- Copy leaderboard URL ---
+    document.getElementById('copy-url-btn').addEventListener('click', () => {
+      if (!selectedCohortId) return;
+      const cohort = cohorts.find(c => c.id === selectedCohortId);
+      const url = `${location.origin}/leaderboard/${cohort.slug}`;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('copy-url-btn');
+        btn.textContent = '✅ Kopiert!';
+        setTimeout(() => { btn.textContent = '📋 Leaderboard-URL'; }, 2000);
+      }).catch(() => alert(url));
+    });
+
+    // --- New cohort form ---
+    const cohortNameInput = document.getElementById('cohort-name-input');
+    const cohortSlugInput = document.getElementById('cohort-slug-input');
+    cohortNameInput.addEventListener('input', () => {
+      if (!cohortSlugInput.dataset.edited) {
+        cohortSlugInput.value = cohortNameInput.value
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      }
+    });
+    cohortSlugInput.addEventListener('input', () => {
+      cohortSlugInput.dataset.edited = 'true';
+    });
+
+    document.getElementById('new-cohort-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('new-cohort-error');
+      errEl.style.display = 'none';
+      const name = cohortNameInput.value;
+      const slug = cohortSlugInput.value;
+      const res = await apiPost('/admin/cohorts', { name, slug });
+      if (res.status === 201) {
+        cohortNameInput.value = '';
+        cohortSlugInput.value = '';
+        delete cohortSlugInput.dataset.edited;
+        await loadCohorts();
+        const newCohort = cohorts.find(c => c.slug === slug);
+        if (newCohort) selectCohort(newCohort.id);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        errEl.textContent = data.error ?? 'Fehler beim Erstellen.';
+        errEl.style.display = '';
+      }
+    });
+
+    // --- Logout ---
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await fetch('/admin/logout', { method: 'POST' });
+      location.replace('/admin/login');
+    });
+
+    // --- Init ---
+    loadCohorts().catch(e => { if (e.message !== 'unauth') console.error(e); });
+  </script>
+</body>
+</html>

@@ -28,12 +28,22 @@ type PostRunsBody = {
   durationSeconds: number;
 };
 
+const rateLimitMax = parseInt(process.env.RATE_LIMIT_MAX ?? '10', 10);
+
 export async function publicRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post<{ Params: { cohortSlug: string }; Body: PostRunsBody }>(
     '/api/:cohortSlug/runs',
     {
       schema: { body: postRunsBodySchema },
       preHandler: groupAuthPreHandler,
+      config: {
+        rateLimit: {
+          max: rateLimitMax,
+          timeWindow: '1 minute',
+          keyGenerator: (req: FastifyRequest) =>
+            String(req.headers['x-api-token'] ?? req.ip),
+        },
+      },
     },
     async (request, reply) => {
       const group = request.group!;

@@ -143,3 +143,287 @@ button:hover { background: #3d4660; }
   color: #f87171;
   margin-top: 1rem;
 }
+
+/* ── Admin login ── */
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.login-card {
+  background: #1e2330;
+  border: 1px solid #2d3347;
+  border-radius: 0.75rem;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.75rem;
+  text-align: center;
+}
+
+.login-card button[type="submit"] {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 1rem;
+}
+
+/* ── Form helpers ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-group input {
+  background: #0f1117;
+  border: 1px solid #2d3347;
+  border-radius: 0.375rem;
+  color: #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus {
+  border-color: #5b6af5;
+}
+
+/* ── Admin layout ── */
+.admin-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #151822;
+  border-right: 1px solid #2d3347;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid #2d3347;
+}
+
+.sidebar-header h1 {
+  font-size: 1.2rem;
+}
+
+.sidebar-label {
+  padding: 0.75rem 1rem 0.35rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.sidebar-section {
+  padding: 0 0;
+}
+
+.sidebar-section .inline-form {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid #2d3347;
+}
+
+.sidebar-list {
+  list-style: none;
+  padding: 0 0.5rem;
+  margin: 0;
+}
+
+.sidebar-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.12s;
+  margin-bottom: 0.1rem;
+}
+
+.sidebar-item:hover { background: #1e2330; }
+.sidebar-item.active { background: #252b3b; border-left: 3px solid #5b6af5; }
+
+.item-name { font-size: 0.95rem; font-weight: 600; }
+.item-slug { font-size: 0.75rem; color: #64748b; }
+
+.empty-item {
+  padding: 0.5rem 0.75rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+/* ── Main content ── */
+.admin-main {
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.cohort-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.cohort-header h2 {
+  font-size: 1.5rem;
+  color: #f8fafc;
+  margin-bottom: 0.2rem;
+}
+
+.slug-badge {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-family: ui-monospace, monospace;
+}
+
+.cohort-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid #2d3347;
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.tab-btn:hover { background: transparent; color: #e2e8f0; }
+.tab-btn.active { color: #5b6af5; border-bottom-color: #5b6af5; }
+
+/* ── Inline form (group/cohort add) ── */
+.inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+/* ── Button variants ── */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #3d4660;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.btn-ghost:hover { background: #2d3347; color: #e2e8f0; }
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid #7f1d1d;
+  color: #f87171;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.btn-danger:hover { background: #7f1d1d33; }
+
+.btn-sm { font-size: 0.75rem; padding: 0.25rem 0.6rem; }
+
+/* ── Token modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal-card {
+  background: #1e2330;
+  border: 1px solid #2d3347;
+  border-radius: 0.75rem;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-card h3 {
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.token-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #0f1117;
+  border: 1px solid #2d3347;
+  border-radius: 0.4rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.token-display code {
+  flex: 1;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+  color: #7dd3fc;
+  word-break: break-all;
+}
+
+.modal-warning {
+  font-size: 0.85rem;
+  color: #fbbf24;
+  line-height: 1.5;
+}
+
+.modal-card > button:last-child {
+  align-self: flex-end;
+}
