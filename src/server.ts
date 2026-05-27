@@ -55,6 +55,10 @@ fastify.get('/admin/login', (_request, reply) => {
   return reply.sendFile('admin/login.html');
 });
 
+fastify.get('/admin/handout', (_request, reply) => {
+  return reply.sendFile('admin/handout.html');
+});
+
 await fastify.register(publicRoutes);
 await fastify.register(authRoutes);
 await fastify.register(adminRoutes);

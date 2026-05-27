@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schnitzeljagd – API-Merkblatt</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="handout-body">
+
+  <div class="handout-wrap">
+
+    <div class="handout-header no-print-hide">
+      <a href="/admin/" class="btn-ghost btn-sm">← Zurück</a>
+      <button onclick="window.print()" class="btn-ghost btn-sm">🖨️ Drucken / PDF</button>
+    </div>
+
+    <div class="handout-card">
+      <div class="handout-title-row">
+        <span class="handout-logo">🥩</span>
+        <div>
+          <h1 class="handout-h1">Schnitzeljagd – API-Merkblatt</h1>
+          <p id="handout-subtitle" class="handout-subtitle"></p>
+        </div>
+      </div>
+
+      <section class="handout-section">
+        <h2>Dein API-Token</h2>
+        <div class="handout-token-box">
+          <code id="handout-token">—</code>
+        </div>
+        <p class="handout-note">⚠️ Diesen Token sicher aufbewahren und <strong>nicht</strong> mit anderen Gruppen teilen.</p>
+      </section>
+
+      <section class="handout-section">
+        <h2>Endpunkt</h2>
+        <div class="handout-code-block">
+          <code>POST <span id="handout-endpoint">https://…/api/&lt;slug&gt;/runs</span></code>
+        </div>
+      </section>
+
+      <section class="handout-section">
+        <h2>Headers</h2>
+        <div class="handout-code-block">
+<pre>Content-Type: application/json
+X-API-Token: <span id="handout-token-header">…</span></pre>
+        </div>
+      </section>
+
+      <section class="handout-section">
+        <h2>Request Body (JSON)</h2>
+        <div class="handout-code-block">
+<pre>{
+  <span class="key">"playerName"</span>:      <span class="str">"Ada Lovelace"</span>,  <span class="comment">// Spielername, max. 80 Zeichen</span>
+  <span class="key">"schnitzel"</span>:       <span class="num">4</span>,               <span class="comment">// Anzahl abgeschlossener Aufgaben (0–10)</span>
+  <span class="key">"kartoffeln"</span>:      <span class="num">1</span>,               <span class="comment">// Anzahl Zeitstrafen (0–10)</span>
+  <span class="key">"durationSeconds"</span>: <span class="num">342</span>             <span class="comment">// Gesamtzeit in Sekunden (1–86400)</span>
+}</pre>
+        </div>
+      </section>
+
+      <section class="handout-section">
+        <h2>Antworten</h2>
+        <table class="handout-table">
+          <thead>
+            <tr><th>Status</th><th>Bedeutung</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>201 Created</code></td><td>✅ Erfolgreich gespeichert</td></tr>
+            <tr><td><code>400 Bad Request</code></td><td>Validierungsfehler (Feldwerte prüfen)</td></tr>
+            <tr><td><code>401 Unauthorized</code></td><td>Token fehlt oder ist ungültig</td></tr>
+            <tr><td><code>404 Not Found</code></td><td>Kohorte nicht gefunden</td></tr>
+            <tr><td><code>429 Too Many Requests</code></td><td>Rate limit überschritten (10/Min.)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="handout-section">
+        <h2>Leaderboard</h2>
+        <div class="handout-code-block">
+          <code>GET <span id="handout-leaderboard">https://…/leaderboard/&lt;slug&gt;</span></code>
+        </div>
+        <p class="handout-note">Aktualisiert sich automatisch alle 30 Sekunden.</p>
+      </section>
+
+      <div class="handout-footer">
+        <p>Viel Erfolg bei der Schnitzeljagd! 🥩🥔</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token  = params.get('token')  ?? '—';
+    const group  = params.get('group')  ?? '';
+    const cohort = params.get('cohort') ?? '';
+    const slug   = params.get('slug')   ?? '';
+    const origin = location.origin;
+
+    document.getElementById('handout-token').textContent        = token;
+    document.getElementById('handout-token-header').textContent = token;
+    document.getElementById('handout-endpoint').textContent     = `${origin}/api/${slug}/runs`;
+    document.getElementById('handout-leaderboard').textContent  = `${origin}/leaderboard/${slug}`;
+
+    const parts = [group, cohort].filter(Boolean);
+    document.getElementById('handout-subtitle').textContent = parts.join(' · ');
+    document.title = `API-Merkblatt – ${group || 'Gruppe'}`;
+  </script>
+</body>
+</html>

@@ -113,7 +113,10 @@
         <button id="copy-token-btn">📋 Kopieren</button>
       </div>
       <p class="modal-warning">⚠️ Dieser Token wird nicht mehr angezeigt.<br>Jetzt kopieren und der Gruppe mitteilen.</p>
-      <button id="modal-close-btn">Schliessen</button>
+      <div class="modal-actions">
+        <a id="modal-handout-btn" href="#" target="_blank" class="btn-primary">📄 Merkblatt öffnen</a>
+        <button id="modal-close-btn" class="btn-ghost">Schliessen</button>
+      </div>
     </div>
   </div>
 
@@ -166,9 +169,18 @@
     let selectedCohortId = null;
 
     // --- Token modal ---
-    function showTokenModal(title, token) {
+    function showTokenModal(title, token, groupName, cohortName, cohortSlug) {
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-token').textContent = token;
+
+      const params = new URLSearchParams({
+        token,
+        group:  groupName  ?? '',
+        cohort: cohortName ?? '',
+        slug:   cohortSlug ?? '',
+      });
+      document.getElementById('modal-handout-btn').href = `/admin/handout?${params}`;
+
       document.getElementById('token-modal').style.display = 'flex';
     }
 
@@ -285,10 +297,11 @@
     }
 
     async function resetGroupToken(groupId, groupName) {
+      const cohort = cohorts.find(c => c.id === selectedCohortId);
       const res = await apiPost(`/admin/groups/${groupId}/reset-token`, {});
       if (!res.ok) { alert('Fehler beim Token-Reset.'); return; }
       const data = await res.json();
-      showTokenModal(`Neuer Token für "${groupName}"`, data.apiToken);
+      showTokenModal(`Neuer Token für "${groupName}"`, data.apiToken, groupName, cohort?.name, cohort?.slug);
     }
 
     async function deleteGroup(groupId, groupName) {
@@ -315,7 +328,8 @@
       if (res.status === 201) {
         const data = await res.json();
         nameInput.value = '';
-        showTokenModal(`Token für "${data.name}"`, data.apiToken);
+        const cohort = cohorts.find(c => c.id === selectedCohortId);
+        showTokenModal(`Token für "${data.name}"`, data.apiToken, data.name, cohort?.name, cohort?.slug);
         loadGroupsForCohort(selectedCohortId);
       } else {
         const data = await res.json().catch(() => ({}));
