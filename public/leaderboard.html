@@ -19,6 +19,7 @@
     </div>
   </div>
 
+  <script src="/format.js"></script>
   <script>
     function esc(str) {
       return String(str)
@@ -26,13 +27,6 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-    }
-
-    function formatDuration(seconds) {
-      const h = Math.floor(seconds / 3600);
-      const m = Math.floor((seconds % 3600) / 60);
-      const s = seconds % 60;
-      return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
     }
 
     function formatTime(iso) {
@@ -75,8 +69,9 @@
 
         const rows = data.entries.map(e => {
           const rankDisplay = e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : e.rank;
+          const rowClass = e.rank <= 3 ? ` class="rank-${e.rank}"` : '';
           return `
-            <tr>
+            <tr${rowClass}>
               <td class="rank">${rankDisplay}</td>
               <td>
                 ${esc(e.playerName)}

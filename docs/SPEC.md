@@ -572,9 +572,7 @@ the app should show a friendly error (not crash).
 - [x] **Run limit per group** — **no cap**; unlimited runs allowed per group.
 - [x] **Admin UI auth** — **login screen** with password + httpOnly session cookie
       (see §5.4 and §6 Admin UI).
-- [ ] **Backup strategy** — cronjob on NAS to copy `leaderboard.db` to a second
-      location daily? Recommendation: use Synology Hyper Backup to include the
-      `/volume1/docker/leaderboard/data` folder in an existing backup task.
+- [x] **Backup strategy** — out of scope for this project; handle via NAS-level Hyper Backup if needed.
 - [x] **Duration display format** — **`HH:mm:ss`** (e.g. `00:05:42`).
 
 ---
@@ -597,6 +595,5 @@ the app should show a friendly error (not crash).
 
 ### Phase 3 — Polish
 11. Landing page with cohort list
-10. Leaderboard animations / medal styling
-11. CSV export for admin
-12. Backup reminder in docs
+12. Leaderboard medal styling + beamer-responsive layout
+13. Shared client-side duration formatter (`public/format.js`)

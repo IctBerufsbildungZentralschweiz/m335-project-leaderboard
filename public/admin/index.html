@@ -120,6 +120,7 @@
     </div>
   </div>
 
+  <script src="/format.js"></script>
   <script>
     function esc(str) {
       return String(str)
@@ -127,13 +128,6 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-    }
-
-    function formatDuration(seconds) {
-      const h = Math.floor(seconds / 3600);
-      const m = Math.floor((seconds % 3600) / 60);
-      const s = seconds % 60;
-      return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
     }
 
     function formatDate(iso) {

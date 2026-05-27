@@ -32,9 +32,7 @@ Derived from the phased implementation plan in [SPEC.md](SPEC.md).
 
 ## Phase 3 — Polish
 
-- [ ] Landing page listing all cohorts with links to leaderboards
-- [ ] Leaderboard medal styling (🥇🥈🥉) + responsive layout for beamer
-- [ ] CSV export of runs per cohort (admin)
-- [ ] `HH:mm:ss` duration helper used consistently across all views
-- [ ] Backup documentation (Synology Hyper Backup setup)
+- [x] Landing page listing all cohorts with links to leaderboards
+- [x] Leaderboard medal styling (🥇🥈🥉) + responsive layout for beamer
+- [x] `HH:mm:ss` duration helper used consistently across all views
 - [x] Student handout template (cohort slug + token instructions) — printable `/admin/handout` page, opened from token modal
