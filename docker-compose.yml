@@ -6,4 +6,10 @@ services:
       - "3000:3000"
     volumes:
       - /volume1/docker/leaderboard/data:/app/data
-    env_file: .env
+    environment:
+      - PORT=${PORT:-3000}
+      - DATABASE_PATH=${DATABASE_PATH:-/app/data/leaderboard.db}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - ADMIN_SESSION_TTL_HOURS=${ADMIN_SESSION_TTL_HOURS:-8}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-10}
