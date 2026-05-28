@@ -15,7 +15,7 @@ Derived from the phased implementation plan in [SPEC.md](SPEC.md).
 - [x] Leaderboard HTML page with auto-refresh (every 30 s)
 - [x] Cohort/group seed CLI (`npm run seed -- create-cohort / create-group`)
 - [x] Landing page at `/` listing all cohorts
-- [ ] Deploy to Synology NAS, verify end-to-end with a test run
+- [x] Deploy to Synology NAS, verify end-to-end with a test run
 
 ## Phase 2 — Admin UX
 
